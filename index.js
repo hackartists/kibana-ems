@@ -21,6 +21,24 @@ export default function (kibana) {
       
       hacks: [
         'plugins/ems/hack'
+      ],
+
+      links: [
+        {
+          id: 'ems:device',
+          title: 'Device',
+          order: -1003,
+          url: `/app/ems/#/device`,
+          description: 'interactively explore your data',
+          icon: 'plugins/kibana/assets/discover.svg',
+        }, {
+          id: 'ems:history',
+          title: 'History',
+          order: -1002,
+          url: `/app/ems/#/history`,
+          description: 'design data visualizations',
+          icon: 'plugins/kibana/assets/visualize.svg',
+        }
       ]
       
     },
