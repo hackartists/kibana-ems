@@ -4,51 +4,29 @@ import uiRoutes from 'ui/routes';
 
 import 'ui/autoload/styles';
 import './less/main.less';
+import { deviceController } from './controllers/device_controller';
+import { historyController } from './controllers/history_controller';
 import template from './templates/index.html';
+import deviceTemplate from './templates/device.html';
+import historyTemplate from './templates/history.html';
 
 uiRoutes.enable();
 uiRoutes
   .when('/', {
-    template,
-    resolve: {
-      currentTime($http) {
-        return $http.get('../api/ems/example').then(function (resp) {
-          return resp.data.time;
-        });
-      }
-    }
-  })
+    template: template,
+  });
+
+uiRoutes
   .when('/device', {
-    template,
-    resolve: {
-      currentTime($http) {
-        return $http.get('../api/ems/example').then(function (resp) {
-          return resp.data.time;
-        });
-      }
-    }
-  })
+    template: deviceTemplate,
+  });
+
+uiRoutes
   .when('/history', {
-    template,
-    resolve: {
-      currentTime($http) {
-        return $http.get('../api/ems/example').then(function (resp) {
-          return resp.data.time;
-        });
-      }
-    }
+    template: historyTemplate,
   });
 
 uiModules
-.get('app/ems', [])
-.controller('emsHelloWorld', function ($scope, $route, $interval) {
-  $scope.title = 'Ems';
-  $scope.description = 'EMS';
-
-  const currentTime = moment($route.current.locals.currentTime);
-  $scope.currentTime = currentTime.format('HH:mm:ss');
-  const unsubscribe = $interval(function () {
-    $scope.currentTime = currentTime.add(1, 'second').format('HH:mm:ss');
-  }, 1000);
-  $scope.$watch('$destroy', unsubscribe);
-});
+  .get('app/ems', [])
+  .controller('deviceController', deviceController)
+  .controller('historyController', historyController);
