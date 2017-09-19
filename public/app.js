@@ -3,6 +3,13 @@ import { uiModules } from 'ui/modules';
 import uiRoutes from 'ui/routes';
 
 import 'ui/autoload/styles';
+import 'angular-material/angular-material.css';
+import 'angular-animate/angular-animate.js';
+import 'angular-aria/angular-aria.js';
+import 'angular-messages/angular-messages.js';
+import 'angular-material/angular-material.js';
+import 'angular-sanitize/angular-sanitize.js';
+
 import './less/main.less';
 import { deviceController } from './controllers/device_controller';
 import { historyController } from './controllers/history_controller';
@@ -27,6 +34,11 @@ uiRoutes
   });
 
 uiModules
-  .get('app/ems', [])
+  .get('app/ems', ['ngMaterial','ngSanitize'])
   .controller('deviceController', deviceController)
-  .controller('historyController', historyController);
+  .controller('historyController', historyController)
+  .config(function ($mdIconProvider){
+    $mdIconProvider
+      .iconSet('menu', '/plugins/ems/icons/menu.svg', 24)
+      .defaultIconSet('/plugins/ems/icons/menu.svg', 24);
+  });
