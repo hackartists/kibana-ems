@@ -34,7 +34,7 @@ uiRoutes
   });
 
 uiModules
-  .get('app/ems', ['ngMaterial','ngSanitize'])
+  .get('app/ems', ['ngMaterial','ngMessages'])
   .controller('deviceController', deviceController)
   .controller('historyController', historyController)
   .config(function ($mdIconProvider){
