@@ -1,30 +1,63 @@
-<div id="wv"  ng-controller="deviceController as dc">
-  <md-fab-toolbar md-open="dc.fab.isOpen" count="dc.fab.count"
-                  md-direction="right">
-    <md-fab-trigger class="align-with-text">
-      <md-button aria-label="menu" class="md-fab md-primary">
-        <md-icon>
-          <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 18 18" fit="" preserveAspectRatio="xMidYMid meet" focusable="false">
-            <path d="M0 0h18v18h-18z" fill="none"></path>
-            <path d="M2 13.5h14v-1.5h-14v1.5zm0-4h14v-1.5h-14v1.5zm0-5.5v1.5h14v-1.5h-14z"></path>
-          </svg>
-        </md-icon>
-      </md-button>
-    </md-fab-trigger>
-
-    <md-toolbar>
-      <md-fab-actions class="md-toolbar-tools">
-        <md-button aria-label="register" >
-          <md-icon class="fab-sub-menu">Register</md-icon>
+<div ng-controller="deviceController as dc" class="ems-wrapper">
+  <div id="wv" class="underoof-fab-nav">
+    <md-fab-toolbar md-open="dc.fab.isOpen" count="dc.fab.count"
+                    md-direction="right">
+      <md-fab-trigger class="align-with-text">
+        <md-button aria-label="menu" class="md-fab md-primary">
+          <md-icon>
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 18 18" fit="" preserveAspectRatio="xMidYMid meet" focusable="false">
+              <path d="M0 0h18v18h-18z" fill="none"></path>
+              <path d="M2 13.5h14v-1.5h-14v1.5zm0-4h14v-1.5h-14v1.5zm0-5.5v1.5h14v-1.5h-14z"></path>
+            </svg>
+          </md-icon>
         </md-button>
-        <md-button aria-label="list">
-          <md-icon class="fab-sub-menu">Devices</md-icon>
-        </md-button>
-      </md-fab-actions>
-    </md-toolbar>
-  </md-fab-toolbar>
+      </md-fab-trigger>
 
+      <md-toolbar>
+        <md-fab-actions class="md-toolbar-tools">
+          <md-menu md-offset="0 -7">
+            <md-button aria-label="Devices" ng-click="$mdMenu.open($event)">
+              <md-icon class="fab-sub-menu" ng-click="dc.setDeviceListTemplate()">Devices</md-icon>
+            </md-button>
 
-  <div id="cv" class="container">
+            <md-menu-content width="4">
+              <md-menu-item>
+                <md-button ng-click="dc.setDeviceHomeTemplate()">
+                  <span md-menu-align-target>Register Device</span>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item>
+                <md-button ng-click="dc.setDeviceListTemplate()">
+                  <span md-menu-align-target>Device List</span>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+
+          <md-menu md-offset="0 -7">
+            <md-button aria-label="Devices" ng-click="$mdMenu.open($event)">
+              <md-icon class="fab-sub-menu" ng-click="dc.setDeviceListTemplate()">Spaces</md-icon>
+            </md-button>
+
+            <md-menu-content width="4">
+              <md-menu-item>
+                <md-button ng-click="dc.setDeviceHomeTemplate()">
+                  <span md-menu-align-target>Register Space</span>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item>
+                <md-button ng-click="dc.setDeviceListTemplate()">
+                  <span md-menu-align-target>Space List</span>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+
+        </md-fab-actions>
+      </md-toolbar>
+    </md-fab-toolbar>
+  </div>
+  
+  <div id="cv" class="ems-container">
   </div>
 </div>

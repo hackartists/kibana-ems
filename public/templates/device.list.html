@@ -1,0 +1,114 @@
+<div ng-cloak layout-gt-sm="row" layout="column">
+  <div flex-gt-sm="20" flex>
+    <md-toolbar layout="row" style="background-color:rgb(250,250,250);">
+      <div class="md-toolbar-tools">
+        <span></span>
+      </div>
+    </md-toolbar>
+
+    <md-content>
+      <md-list flex>
+        <md-list-item class="md-3-line" ng-repeat="item in dc.devices" ng-click="dc.select_device(item)">
+          <div class="md-list-item-text" layout="column">
+            <h3>{{ item.device_name }}</h3>
+            <h4>{{ item.type == 0 ? 'Gateway' : item.type==1 ? 'Smart meter' : 'Smart plug' }}</h4>
+          </div>
+        </md-list-item>
+    </md-content>
+  </div>
+
+  <div flex-gt-sm="80" flex>
+    <md-content class="md-padding" layout-xs="column" layout="row">
+      <div flex-xs flex-gt-xs="100" layout="column">
+        <md-card>
+          <!-- <md-card-header> -->
+          <!-- <md-card-avatar> -->
+          <!--   <md-icon class="md-avatar-icon" md-svg-icon="img/icons/menu.svg"></md-icon> -->
+          <!-- </md-card-avatar> -->
+          <!--   <md-card-header-text> -->
+          <!--     <span class="md-title">Title</span> -->
+          <!--     <span class="md-subhead">subhead</span> -->
+          <!--   </md-card-header-text> -->
+          <!-- </md-card-header> -->
+          <md-toolbar class="md-theme-light">
+            <h2 class="md-toolbar-tools">
+              <span>Device Information</span>
+            </h2>
+          </md-toolbar>
+          <!-- <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out"> -->
+          <md-card-title>
+            <md-card-title-text>
+              <span class="md-headline">{{dc.selected_device.device_name}}</span>
+              <span class="md-subhead">{{ dc.selected_device.type == 0 ? 'Gateway' : dc.selected_device.type==1 ? 'Smart meter' : 'Smart plug' }}</span>
+            </md-card-title-text>
+          </md-card-title>
+          <md-card-content>
+            <form name="userForm">
+              <div layout-gt-sm="row">
+                <md-input-container class="md-block" flex-gt-sm>
+                  <label>Device ID</label>
+                  <input ng-model="dc.selected_device.device_id" disabled>
+                </md-input-container>
+
+                <md-input-container>
+                  <label>Setup date</label>
+                  <md-datepicker ng-model="dc.selected_device.setup_date" disabled></md-datepicker>
+                </md-input-container>
+              </div>
+
+              <div layout-gt-sm="row">
+                <md-input-container class="md-block" flex-gt-sm>
+                  <label>Space ID</label>
+                  <input ng-model="dc.selected_device.space_id" disabled>
+                </md-input-container>
+
+                <md-input-container class="md-block" flex-gt-sm>
+                  <label>Parent ID</label>
+                  <input ng-model="dc.selected_device.parent_id" disabled>
+                </md-input-container>
+              </div>
+
+              <div layout-gt-sm="row">
+                <md-input-container class="md-block" flex-gt-sm>
+                  <label>IP address</label>
+                  <input ng-model="dc.selected_device.ip_addr" disabled>
+                </md-input-container>
+              </div>
+            </form>
+            <md-list>
+              <md-subheader class="md-no-sticky">Connected devices</md-subheader>
+              <md-list-item ng-repeat="child in dc.selected_children" ng-click="dc.select_device(child)" class="noright">
+                <p>{{ child.device_name }}</p>
+                <!-- <md-checkbox class="md-secondary" ng-model="person.selected"></md-checkbox> -->
+                <!-- <md-icon md-svg-icon="communication:email"  ng-click="doSecondaryAction($event)" aria-label="Send Email" class="md-secondary md-hue-3" ></md-icon> -->
+                <!-- <md-icon class="md-secondary" ng-click="doSecondaryAction($event)" aria-label="Chat" md-svg-icon="communication:message"></md-icon> -->
+              </md-list-item>
+            </md-list>
+          </md-card-content>
+        </md-card>
+        <md-card>
+          <md-toolbar class="md-theme-light">
+            <h2 class="md-toolbar-tools">
+              <span>Space Information</span>
+            </h2>
+          </md-toolbar>
+          <!-- <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out"> -->
+          <md-card-title>
+            <md-card-title-text>
+              <span class="md-headline">{{dc.selected_space.name}}</span>
+              <span class="md-subhead">{{ dc.selected_space.user_id }}</span>
+            </md-card-title-text>
+          </md-card-title>
+
+          <md-card-content>
+            <div map-lazy-load="https://maps.google.com/maps/api/js?key=AIzaSyBewkiCX67bKGcuLZ8z-DbGbzW8S9PxMvw">
+              <ng-map center="{{dc.selected_space.location.lat}},{{dc.selected_space.location.lng}}" zoom="18" on-click="dc.addMarker()" class="space">
+                <marker position="{{dc.selected_space.location.lat}},{{dc.selected_space.location.lng}}"></marker>
+              </ng-map>
+            </div>
+          </md-card-content>
+        </md-card>
+      </div>
+    </md-content>
+  </div>
+</div>
