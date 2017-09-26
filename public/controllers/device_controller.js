@@ -1,28 +1,19 @@
 import moment from 'moment';
-import deviceHomeTemplate from '../templates/device-home.html';
+import deviceRegisterTemplate from '../templates/device.register.html';
 import deviceListTemplate from '../templates/device.list.html';
+import spaceListTemplate from '../templates/space.list.html';
+import testDialogTemplate from '../templates/test.html';
 import 'plugins/security/services/shield_user';
 
-export function deviceController($scope, $route, $interval, $http, $sce,$compile, ShieldUser, NgMap) {
+export function deviceController($scope, $route, $interval, $http, $sce,$compile,$timeout,$mdDialog, ShieldUser, NgMap) {
     var device = this;
     device.title = 'PNU EMS';
     device.description = 'Device page of EMS';
-    device.homeTemplate = deviceHomeTemplate;
-
-    device.currentTime = moment($route.current.locals.currentTime);
-    device.displayTime = device.currentTime.format('HH:mm:ss');
-
-    device.markers=[];
-
-    NgMap.getMap().then(function(map) {
-        console.log(map.getCenter());
-        console.log('markers', map.markers);
-        console.log('shapes', map.shapes);
-    });
+    device.space = {};
 
     device.addMarker = function(event) {
         var ll = event.latLng;
-        device.markers.push({lat:ll.lat(), lng: ll.lng()});
+        device.space.location={lat:ll.lat(),lng:ll.lng()};
     }
 
     $scope.googleMapsUrl="https://maps.googleapis.com/maps/api/js?key=AIzaSyBewkiCX67bKGcuLZ8z-DbGbzW8S9PxMvw";
@@ -31,17 +22,85 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         device.setDeviceListTemplate();
     };
 
-    device.setDeviceListTemplate = function() {
+    device.setTemplate = function(tmpl) {
         var cv = angular.element(document.getElementById("cv"));
-        cv.html(deviceListTemplate);
+        cv.html(tmpl);
         $compile(cv.contents())($scope);
+        NgMap.getMap().then(function(map) {
+            $timeout(() => {google.maps.event.trigger(map, 'resize')}, 1000)
+        });
     };
 
-    device.setDeviceHomeTemplate = function() {
-        var cv = angular.element(document.getElementById("cv"));
-        cv.html(deviceHomeTemplate);
-        $compile(cv.contents())($scope);
+    function DialogController($scope, $mdDialog) {
+        $scope.hide = function() {
+            $mdDialog.hide();
+        };
+
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+        $scope.answer = function(answer) {
+            $mdDialog.hide(answer);
+        };
     }
+
+    device.showDialog = function(ev) {
+        $mdDialog.show({
+            controller: DialogController,
+            template: testDialogTemplate,
+            parent: angular.element(document.body),
+            targetEvent: ev,
+            clickOutsideToClose:true,
+            fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
+        })
+            .then(function(answer) {
+                $scope.status = 'You said the information was "' + answer + '".';
+            }, function() {
+                $scope.status = 'You cancelled the dialog.';
+            });
+
+        // var parentEl = angular.element(document.body);
+        // $mdDialog.show({
+        //     parent: parentEl,
+        //     targetEvent: ev,
+        //     template:deviceRegisterTemplate,
+        //     locals: {
+        //         items: $scope.items
+        //     },
+        //     controller:DialogController
+        // });
+        // function DialogController($scope, $mdDialog, items) {
+        //     $scope.items = items;
+        //     $scope.cancel = function() {
+        //         $mdDialog.hide();
+        //     };
+
+        //     $scope.register_device = function() {
+        //     };
+        // }
+    };
+
+    device.cancel = function(t) {
+        $mdDialog.cancel();
+        device.setDeviceListTemplate();
+    };
+
+    device.setDeviceListTemplate = function() {
+        device.setTemplate(deviceListTemplate);
+    };
+
+    device.setDeviceRegisterTemplate = function() {
+        device.setTemplate(deviceRegisterTemplate);
+    };
+
+    device.setSpaceListTemplate = function() {
+        device.setTemplate(spaceListTemplate);
+    };
+
+    device.setSpaceRegisterTemplate = function() {
+        device.setTemplate(spaceRegisterTemplate);
+    };
 
     device.select_device= function(dev) {
         device.selected_device=dev;
@@ -52,6 +111,19 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         device.selected_children = device.devices.filter(function(e) {
             return device.selected_device.device_id == e.parent_id
         });
+    };
+
+    device.select_space= function(sp) {
+        device.selected_space=sp;
+
+        device.selected_devices = device.devices.filter(function(e) {
+            return device.selected_space.space_id == e.space_id
+        });
+    };
+
+    device.switch_to_device_view = function(dev) {
+        device.setDeviceListTemplate();
+        device.select_device(dev);
     };
 
     device.selected_children=[];
@@ -86,9 +158,9 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
                                      value: el.value};
                          });
 
-    device.spaces = [{name:"Home", space_id:"sp0", location:"00", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}},
-                     {name:"Office", space_id:"sp1", location:"00", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}},
-                     {name:"School", space_id:"sp2", location:"00", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}}]
+    device.spaces = [{name:"Home", space_id:"sp0", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}},
+                     {name:"Office", space_id:"sp1", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}},
+                     {name:"School", space_id:"sp2", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}}]
         .map(function(el) {
             return {name: el.name,
                     space_id:el.space_id,
