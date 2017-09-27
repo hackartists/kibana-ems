@@ -2,6 +2,7 @@ import moment from 'moment';
 import deviceRegisterTemplate from '../templates/device.register.html';
 import deviceListTemplate from '../templates/device.list.html';
 import spaceListTemplate from '../templates/space.list.html';
+import spaceRegisterTemplate from '../templates/space.register.html';
 import testDialogTemplate from '../templates/test.html';
 import 'plugins/security/services/shield_user';
 
@@ -10,11 +11,6 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
     device.title = 'PNU EMS';
     device.description = 'Device page of EMS';
     device.space = {};
-
-    device.addMarker = function(event) {
-        var ll = event.latLng;
-        device.space.location={lat:ll.lat(),lng:ll.lng()};
-    }
 
     $scope.googleMapsUrl="https://maps.googleapis.com/maps/api/js?key=AIzaSyBewkiCX67bKGcuLZ8z-DbGbzW8S9PxMvw";
 
@@ -27,11 +23,14 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         cv.html(tmpl);
         $compile(cv.contents())($scope);
         NgMap.getMap().then(function(map) {
-            $timeout(() => {google.maps.event.trigger(map, 'resize')}, 1000)
+            google.maps.event.trigger(map, 'resize');
         });
     };
 
-    function DialogController($scope, $mdDialog) {
+    function DialogController($scope, $mdDialog, $timeout, NgMap, params) {
+        $scope.item = {};
+        $scope.args = params;
+
         $scope.hide = function() {
             $mdDialog.hide();
         };
@@ -40,66 +39,75 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
             $mdDialog.cancel();
         };
 
-        $scope.answer = function(answer) {
-            $mdDialog.hide(answer);
+        $scope.register = function() {
+            $mdDialog.hide($scope.item);
         };
+
+        $scope.addMarker = function(event) {
+            var ll = event.latLng;
+            $scope.item.location={lat:ll.lat(),lng:ll.lng()};
+            NgMap.getMap().then(function(map) {
+                google.maps.event.trigger(map, 'resize');
+                map.setCenter($scope.item.location); 
+            });
+        }
     }
 
-    device.showDialog = function(ev) {
+    device.showDialog = function(ev,tmpl, callback) {
+        
         $mdDialog.show({
             controller: DialogController,
-            template: testDialogTemplate,
+            template: tmpl,
             parent: angular.element(document.body),
             targetEvent: ev,
             clickOutsideToClose:true,
+            locals: {
+                params : {
+                    deviceTypes:device.deviceTypes,
+                    spaces : device.spaces,
+                    parents: device.parents
+                },
+            },
+            onComplete:function(scope, element){
+                var el = document.getElementById("space_map")
+                if(el) {
+                    var mapOptions = {
+                        zoom: 14,
+                        center: {lat:35.2337171, lng:129.0773478},
+                        disableDefaultUI: true
+                    };
+                    var map = new google.maps.Map(document.getElementById("space_map"), mapOptions);
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        position: {lat:35.2337171, lng:129.0773478}
+                    });
+                }
+            },
             fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
-        })
-            .then(function(answer) {
-                $scope.status = 'You said the information was "' + answer + '".';
-            }, function() {
-                $scope.status = 'You cancelled the dialog.';
-            });
+        }).then(function(item) {
+            callback(item);
+        }, function() {});
 
-        // var parentEl = angular.element(document.body);
-        // $mdDialog.show({
-        //     parent: parentEl,
-        //     targetEvent: ev,
-        //     template:deviceRegisterTemplate,
-        //     locals: {
-        //         items: $scope.items
-        //     },
-        //     controller:DialogController
-        // });
-        // function DialogController($scope, $mdDialog, items) {
-        //     $scope.items = items;
-        //     $scope.cancel = function() {
-        //         $mdDialog.hide();
-        //     };
-
-        //     $scope.register_device = function() {
-        //     };
-        // }
+    
     };
 
-    device.cancel = function(t) {
-        $mdDialog.cancel();
-        device.setDeviceListTemplate();
+    device.showDeviceRegisterDialog = function(ev) {
+        device.showDialog(ev, deviceRegisterTemplate, function(dev){
+        });
+    };
+
+    device.showSpaceRegisterDialog = function(ev) {
+        device.showDialog(ev, spaceRegisterTemplate, function(sp){
+        });
     };
 
     device.setDeviceListTemplate = function() {
         device.setTemplate(deviceListTemplate);
     };
 
-    device.setDeviceRegisterTemplate = function() {
-        device.setTemplate(deviceRegisterTemplate);
-    };
 
     device.setSpaceListTemplate = function() {
         device.setTemplate(spaceListTemplate);
-    };
-
-    device.setSpaceRegisterTemplate = function() {
-        device.setTemplate(spaceRegisterTemplate);
     };
 
     device.select_device= function(dev) {
@@ -111,6 +119,10 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         device.selected_children = device.devices.filter(function(e) {
             return device.selected_device.device_id == e.parent_id
         });
+
+        NgMap.getMap().then(function(map) {
+            map.setCenter(device.selected_space.location); 
+        });
     };
 
     device.select_space= function(sp) {
@@ -118,6 +130,10 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
 
         device.selected_devices = device.devices.filter(function(e) {
             return device.selected_space.space_id == e.space_id
+        });
+
+        NgMap.getMap().then(function(map) {
+            map.setCenter(device.selected_space.location); 
         });
     };
 
@@ -158,9 +174,9 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
                                      value: el.value};
                          });
 
-    device.spaces = [{name:"Home", space_id:"sp0", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}},
-                     {name:"Office", space_id:"sp1", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}},
-                     {name:"School", space_id:"sp2", user_id:"jseokchoi", location:{lat:"35.2337171", lng:"129.0773478"}}]
+    device.spaces = [{name:"Home", space_id:"sp0", user_id:"jseokchoi", location:{lat:35.2337171, lng:129.0773478}},
+                     {name:"Office", space_id:"sp1", user_id:"jseokchoi", location:{lat:35.2337171, lng:129.0773478}},
+                     {name:"School", space_id:"sp2", user_id:"jseokchoi", location:{lat:35.2337171, lng:129.0773478}}]
         .map(function(el) {
             return {name: el.name,
                     space_id:el.space_id,

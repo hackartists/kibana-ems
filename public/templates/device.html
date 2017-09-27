@@ -15,44 +15,13 @@
 
       <md-toolbar>
         <md-fab-actions class="md-toolbar-tools">
-          <md-menu md-offset="0 -7">
-            <md-button aria-label="Devices" ng-click="$mdMenu.open($event)">
-              <md-icon class="fab-sub-menu" ng-click="dc.setDeviceRegisterTemplate()">Devices</md-icon>
-            </md-button>
+          <md-button aria-label="Devices" ng-click="$mdMenu.open($event)">
+            <md-icon class="fab-sub-menu" ng-click="dc.setDeviceListTemplate()">Devices</md-icon>
+          </md-button>
 
-            <md-menu-content width="4">
-              <md-menu-item>
-                <md-button ng-click="dc.setDeviceRegisterTemplate()">
-                  <span md-menu-align-target>Register Device</span>
-                </md-button>
-              </md-menu-item>
-              <md-menu-item>
-                <md-button ng-click="dc.setDeviceListTemplate()">
-                  <span md-menu-align-target>Device List</span>
-                </md-button>
-              </md-menu-item>
-            </md-menu-content>
-          </md-menu>
-
-          <md-menu md-offset="0 -7">
-            <md-button aria-label="Devices" ng-click="$mdMenu.open($event)">
-              <md-icon class="fab-sub-menu">Spaces</md-icon>
-            </md-button>
-
-            <md-menu-content width="4">
-              <md-menu-item>
-                <md-button ng-click="dc.setSpaceRegisterTemplate()">
-                  <span md-menu-align-target>Register Space</span>
-                </md-button>
-              </md-menu-item>
-              <md-menu-item>
-                <md-button ng-click="dc.setSpaceListTemplate()">
-                  <span md-menu-align-target>Space List</span>
-                </md-button>
-              </md-menu-item>
-            </md-menu-content>
-          </md-menu>
-
+          <md-button aria-label="Devices" ng-click="$mdMenu.open($event)">
+            <md-icon class="fab-sub-menu" ng-click="dc.setSpaceListTemplate()">Spaces</md-icon>
+          </md-button>
         </md-fab-actions>
       </md-toolbar>
     </md-fab-toolbar>
