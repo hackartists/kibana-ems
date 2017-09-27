@@ -43,18 +43,20 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
             $mdDialog.hide($scope.item);
         };
 
-        $scope.addMarker = function(event) {
-            var ll = event.latLng;
-            $scope.item.location={lat:ll.lat(),lng:ll.lng()};
-            NgMap.getMap().then(function(map) {
-                google.maps.event.trigger(map, 'resize');
-                map.setCenter($scope.item.location); 
+        $scope.addMarker = function(location,map) {
+            $scope.item.location={lat:location.lat(),lng:location.lng()};
+            if ($scope.marker) {
+                $scope.marker.setMap(null);
+            } 
+            $scope.marker = new google.maps.Marker({
+                position: location,
+                map: map
             });
+
         }
     }
 
     device.showDialog = function(ev,tmpl, callback) {
-        
         $mdDialog.show({
             controller: DialogController,
             template: tmpl,
@@ -74,12 +76,11 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
                     var mapOptions = {
                         zoom: 14,
                         center: {lat:35.2337171, lng:129.0773478},
-                        disableDefaultUI: true
+                        mapTypeControl: true,
                     };
                     var map = new google.maps.Map(document.getElementById("space_map"), mapOptions);
-                    var marker = new google.maps.Marker({
-                        map: map,
-                        position: {lat:35.2337171, lng:129.0773478}
+                    google.maps.event.addListener(map, 'click', function(event) {
+                        scope.addMarker(event.latLng, map);
                     });
                 }
             },
@@ -87,8 +88,6 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         }).then(function(item) {
             callback(item);
         }, function() {});
-
-    
     };
 
     device.showDeviceRegisterDialog = function(ev) {
