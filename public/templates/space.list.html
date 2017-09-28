@@ -1,0 +1,57 @@
+<md-button class="register md-fab md-mini md-primary" aria-label="Plus" ng-click="dc.showSpaceRegisterDialog($event)">
+  +
+</md-button>
+<div ng-cloak layout-gt-sm="row" layout="column">
+  <div flex-gt-sm="20" flex>
+    <md-toolbar layout="row" style="background-color:rgb(250,250,250);">
+      <div class="md-toolbar-tools">
+        <span></span>
+      </div>
+    </md-toolbar>
+
+    <md-content>
+      <md-list flex>
+        <md-list-item class="md-3-line" ng-repeat="item in dc.spaces" ng-click="dc.select_space(item)">
+          <div class="md-list-item-text" layout="column">
+            <h3>{{ item.name }}</h3>
+            <h4>{{ item.space_id }}</h4>
+          </div>
+        </md-list-item>
+    </md-content>
+  </div>
+
+  <div flex-gt-sm="80" flex>
+    <md-content class="md-padding" layout-xs="column" layout="row">
+      <div flex-xs flex-gt-xs="100" layout="column">
+        <md-card>
+          <md-toolbar class="md-theme-light">
+            <h2 class="md-toolbar-tools">
+              <span>Space Information</span>
+            </h2>
+          </md-toolbar>
+          <md-card-title>
+            <md-card-title-text>
+              <span class="md-headline">{{dc.selected_space.name}}</span>
+              <span class="md-subhead">{{ dc.selected_space.user_id }}</span>
+            </md-card-title-text>
+          </md-card-title>
+
+          <md-card-content>
+            <div map-lazy-load="https://maps.google.com/maps/api/js?key=AIzaSyBewkiCX67bKGcuLZ8z-DbGbzW8S9PxMvw">
+              <ng-map center="{{dc.selected_space.location.lat}},{{dc.selected_space.location.lng}}" zoom="18" class="space">
+                <marker position="{{dc.selected_space.location.lat}},{{dc.selected_space.location.lng}}"></marker>
+              </ng-map>
+            </div>
+          </md-card-content>
+
+          <md-list>
+            <md-subheader class="md-no-sticky">Connected devices</md-subheader>
+            <md-list-item ng-repeat="dv in dc.selected_devices" ng-click="dc.switch_to_device_view(dv)" class="noright">
+              <p>{{ dv.device_name }}</p>
+            </md-list-item>
+          </md-list>
+        </md-card>
+      </div>
+    </md-content>
+  </div>
+</div>
