@@ -1,11 +1,12 @@
 import { resolve } from 'path';
-import exampleRoute from './server/routes/example';
+import mainRoute from './server/routes';
 
 export default function (kibana) {
   return new kibana.Plugin({
     id: 'ems',
     require: ['elasticsearch'],
     name: 'ems',
+    configPrefix: 'ems',
     uiExports: {
       
       app: {
@@ -47,13 +48,14 @@ export default function (kibana) {
     config(Joi) {
       return Joi.object({
         enabled: Joi.boolean().default(true),
+        index_pattern: Joi.string().default('ems')
       }).default();
     },
 
     
     init(server, options) {
       // Add server routes and initialize the plugin here
-      exampleRoute(server);
+      mainRoute(server);
     }
     
 

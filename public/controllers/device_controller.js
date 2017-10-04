@@ -3,10 +3,9 @@ import deviceRegisterTemplate from '../templates/device.register.html';
 import deviceListTemplate from '../templates/device.list.html';
 import spaceListTemplate from '../templates/space.list.html';
 import spaceRegisterTemplate from '../templates/space.register.html';
-import testDialogTemplate from '../templates/test.html';
 import 'plugins/security/services/shield_user';
 
-export function deviceController($scope, $route, $interval, $http, $sce,$compile,$timeout,$mdDialog, ShieldUser, NgMap) {
+export function deviceController($scope, $route, $interval, $http, $sce,$compile,$timeout,$mdDialog, ShieldUser, NgMap, SpaceService) {
     var device = this;
     device.title = 'PNU EMS';
     device.description = 'Device page of EMS';
@@ -16,6 +15,9 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
 
     device.init = function () {
         device.setDeviceListTemplate();
+        SpaceService.test(function(res) {
+            console.log(res);
+        });
     };
 
     device.setTemplate = function(tmpl) {
@@ -53,10 +55,12 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
                 map: map
             });
 
-        }
+        };
     }
 
     device.showDialog = function(ev,tmpl, callback) {
+        //document.body.scrollTop = 0;
+
         $mdDialog.show({
             controller: DialogController,
             template: tmpl,
@@ -71,12 +75,12 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
                 },
             },
             onComplete:function(scope, element){
-                var el = document.getElementById("space_map")
+                var el = document.getElementById("space_map");
                 if(el) {
                     var mapOptions = {
                         zoom: 14,
                         center: {lat:35.2337171, lng:129.0773478},
-                        mapTypeControl: true,
+                        mapTypeControl: true
                     };
                     var map = new google.maps.Map(document.getElementById("space_map"), mapOptions);
                     google.maps.event.addListener(map, 'click', function(event) {
@@ -92,11 +96,16 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
 
     device.showDeviceRegisterDialog = function(ev) {
         device.showDialog(ev, deviceRegisterTemplate, function(dev){
+
         });
     };
 
     device.showSpaceRegisterDialog = function(ev) {
         device.showDialog(ev, spaceRegisterTemplate, function(sp){
+            sp.user_id = device.user.username;
+            SpaceService.register(sp,function(res) {
+                console.log(res);
+            });
         });
     };
 
@@ -112,11 +121,11 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
     device.select_device= function(dev) {
         device.selected_device=dev;
         device.selected_space = device.spaces.filter(function(e) {
-            return device.selected_device.space_id == e.space_id
+            return device.selected_device.space_id == e.space_id;
         })[0];
 
         device.selected_children = device.devices.filter(function(e) {
-            return device.selected_device.device_id == e.parent_id
+            return device.selected_device.device_id == e.parent_id;
         });
 
         NgMap.getMap().then(function(map) {
@@ -128,7 +137,7 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         device.selected_space=sp;
 
         device.selected_devices = device.devices.filter(function(e) {
-            return device.selected_space.space_id == e.space_id
+            return device.selected_space.space_id == e.space_id;
         });
 
         NgMap.getMap().then(function(map) {

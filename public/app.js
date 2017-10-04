@@ -13,6 +13,7 @@ import 'ngmap/build/scripts/ng-map.js';
 import './less/main.less';
 import { deviceController } from './controllers/device_controller';
 import { historyController } from './controllers/history_controller';
+import spaceService from './services/spaceService';
 import template from './templates/index.html';
 import deviceTemplate from './templates/device.html';
 import historyTemplate from './templates/history.html';
@@ -20,23 +21,24 @@ import historyTemplate from './templates/history.html';
 uiRoutes.enable();
 uiRoutes
   .when('/', {
-    template: template,
+    template: template
   });
 
 uiRoutes
   .when('/device', {
-    template: deviceTemplate,
+    template: deviceTemplate
   });
 
 uiRoutes
   .when('/history', {
-    template: historyTemplate,
+    template: historyTemplate
   });
 
 uiModules
   .get('app/ems', ['ngMaterial','ngMessages','ngMap'])
   .controller('deviceController', deviceController)
   .controller('historyController', historyController)
+  .service('SpaceService', spaceService)
   .config(function ($mdIconProvider,$mdThemingProvider){
     $mdIconProvider
       .iconSet('menu', '/plugins/ems/icons/menu.svg', 24)
