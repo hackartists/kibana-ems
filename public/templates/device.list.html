@@ -36,7 +36,12 @@
           <md-toolbar class="md-theme-light">
             <h2 class="md-toolbar-tools">
               <span>Device Information</span>
+              <span flex></span>
+              <md-button class="md-button" ng-click="dc.modify($event)">
+                Modify
+              </md-button>
             </h2>
+            
           </md-toolbar>
           <!-- <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out"> -->
           <md-card-title>
@@ -50,7 +55,7 @@
               <div layout-gt-sm="row">
                 <md-input-container class="md-block" flex-gt-sm>
                   <label>Device ID</label>
-                  <input ng-model="dc.selected_device.device_id" disabled>
+                  <input ng-model="dc.selected_device.device_id" disable>
                 </md-input-container>
 
                 <md-input-container>

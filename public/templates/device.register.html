@@ -16,6 +16,13 @@
       <div class="md-dialog-content">
         <div layout-gt-sm="row">
           <md-input-container class="md-block" flex-gt-sm>
+            <label>Device name</label>
+            <input ng-model="item.device_name">
+          </md-input-container>
+        </div>
+
+        <div layout-gt-sm="row">
+          <md-input-container class="md-block" flex-gt-sm>
             <label>Device ID</label>
             <input ng-model="item.device_id">
           </md-input-container>
@@ -29,7 +36,7 @@
         <div layout-gt-sm="row">
           <md-input-container class="md-block" flex-gt-sm>
             <label>Device type</label>
-            <md-select ng-model="item.type">
+            <md-select ng-model="item.type" ng-change="dt_change()">
               <md-option ng-repeat="dt in args.deviceTypes" value="{{dt.value}}">
                 {{dt.name}}
               </md-option>
@@ -39,8 +46,19 @@
 
         <div layout-gt-sm="row">
           <md-input-container class="md-block" flex-gt-sm>
+            <label>Parent device</label>
+            <md-select ng-model="item.parent_id" ng-change="pr_change()">
+              <md-option ng-repeat="pr in args.parents" value="{{pr.device_id}}">
+                {{pr.device_name}}
+              </md-option>
+            </md-select>
+          </md-input-container>
+        </div>
+
+        <div layout-gt-sm="row">
+          <md-input-container class="md-block" flex-gt-sm>
             <label>Space</label>
-            <md-select ng-model="item.space_id">
+            <md-select ng-model="item.space_id" ng-change="sp_change()">
               <md-option ng-repeat="sp in args.spaces" value="{{sp.space_id}}">
                 {{sp.name}}
               </md-option>
@@ -54,24 +72,13 @@
             <input ng-model="item.ip_addr">
           </md-input-container>
         </div>
-
-        <div layout-gt-sm="row">
-          <md-input-container class="md-block" flex-gt-sm>
-            <label>Parent device</label>
-            <md-select ng-model="item.parent_id">
-              <md-option ng-repeat="pr in args.parents" value="{{pr.device_id}}">
-                {{pr.device_name}}
-              </md-option>
-            </md-select>
-          </md-input-container>
-        </div>
         
       </div>
     </md-dialog-content>
 
     <md-dialog-actions layout="row">
       <md-button ng-click="register()">
-        Register
+        {{ args.action == 'Modify' ? 'Modify' : 'Register' }}
       </md-button>
       <md-button ng-click="cancel()">
         Cancel

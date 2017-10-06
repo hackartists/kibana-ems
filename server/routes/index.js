@@ -1,12 +1,14 @@
 import deviceRoute from './device';
 import spaceRoute from './space';
+import dataRoute from './data';
 
 export default function (server) {
   var baseURI = '/api/ems';
 
   var subRoutes = [
     {uri: '/device', handler: deviceRoute},
-    {uri: '/space', handler: spaceRoute}
+    {uri: '/space', handler: spaceRoute},
+    {uri: '/data', handler: dataRoute}
   ];
 
   for (var i=0; i< subRoutes.length; i++) {

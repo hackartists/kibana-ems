@@ -14,18 +14,18 @@ export default function (baseURI, server) {
         path: baseURI,
         method: 'GET',
         handler(req, reply) {
-            if (!req.query.user_id){
+            if (!req.query.device_id){
                 reply({result:false});
                 return;
             }
 
             var params = {
                 index: index_pattern,
-                type: 'device',
+                type: 'data',
                 body:{
                     query: {
                         match: {
-                            user_id: req.query.user_id
+                            device_id: req.query.device_id
                         }
                     }
                 }
@@ -42,34 +42,16 @@ export default function (baseURI, server) {
     });
 
     server.route({
-        path: baseURI + "/types",
-        method: 'GET',
-        handler(req, reply) {
-            var params = {
-                index: index_pattern,
-                type: 'device_type'
-            };
-
-            transaction(req,'search', params, function(res,err) {
-                if (err == null) {
-                    res = res.hits.hits;
-                }
-
-                reply(res);
-            });
-        }
-    });
-
-    server.route({
-        path: baseURI + '/register',
+        path: baseURI,
         method: 'POST',
         handler(req, reply) {
-            var device = req.payload;
+            var data = req.payload;
+            data.create_at = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
             var params = {
                 index: index_pattern,
-                type: 'device',
+                type: 'data',
                 id: (new Date()).getTime(),
-                body: device
+                body: data
             };
 
             transaction(req,'create',params, function(res,err) {
@@ -80,36 +62,6 @@ export default function (baseURI, server) {
 
                 reply(res);
             });
-        }
-    });
-
-    server.route({
-        path: baseURI + '/modify',
-        method: 'POST',
-        handler(req, reply) {
-            console.log("/modify");
-            console.log(req.payload);
-            var device = req.payload.device;
-            var id = req.payload.id;
-            var params = {
-                index: index_pattern,
-                type: 'device',
-                id: id,
-                body: {doc:device}
-            };
-
-            transaction(req,'update',params, function(res,err) {
-                reply(res);
-            });
-        }
-    });
-
-    server.route({
-        path: baseURI + '/test',
-        method: 'GET',
-        handler(req, reply) {
-            console.log("test function");
-            reply({ time: (new Date()).toISOString() });
         }
     });
 }

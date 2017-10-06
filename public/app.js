@@ -14,6 +14,7 @@ import './less/main.less';
 import { deviceController } from './controllers/device_controller';
 import { historyController } from './controllers/history_controller';
 import spaceService from './services/spaceService';
+import deviceService from './services/deviceService';
 import template from './templates/index.html';
 import deviceTemplate from './templates/device.html';
 import historyTemplate from './templates/history.html';
@@ -39,6 +40,7 @@ uiModules
   .controller('deviceController', deviceController)
   .controller('historyController', historyController)
   .service('SpaceService', spaceService)
+  .service('DeviceService', deviceService)
   .config(function ($mdIconProvider,$mdThemingProvider){
     $mdIconProvider
       .iconSet('menu', '/plugins/ems/icons/menu.svg', 24)
