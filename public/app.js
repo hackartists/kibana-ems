@@ -10,11 +10,14 @@ import 'angular-messages/angular-messages.js';
 import 'angular-material/angular-material.js';
 import 'angular-sanitize/angular-sanitize.js';
 import 'ngmap/build/scripts/ng-map.js';
+import 'angular-file-upload/dist/angular-file-upload.js';
 import './less/main.less';
 import { deviceController } from './controllers/device_controller';
 import { historyController } from './controllers/history_controller';
 import spaceService from './services/spaceService';
 import deviceService from './services/deviceService';
+import dataService from './services/dataService';
+import drawBlueprintDirective from './directives/draw_blueprint.js';
 import template from './templates/index.html';
 import deviceTemplate from './templates/device.html';
 import historyTemplate from './templates/history.html';
@@ -36,11 +39,13 @@ uiRoutes
   });
 
 uiModules
-  .get('app/ems', ['ngMaterial','ngMessages','ngMap'])
+  .get('app/ems', ['ngMaterial','ngMessages','ngMap','angularFileUpload'])
   .controller('deviceController', deviceController)
   .controller('historyController', historyController)
   .service('SpaceService', spaceService)
   .service('DeviceService', deviceService)
+  .service('DataService', dataService)
+  .directive('drawBlueprint', drawBlueprintDirective)
   .config(function ($mdIconProvider,$mdThemingProvider){
     $mdIconProvider
       .iconSet('menu', '/plugins/ems/icons/menu.svg', 24)

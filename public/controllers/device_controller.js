@@ -1,12 +1,73 @@
 import moment from 'moment';
+import 'd3/d3.js';
 import deviceRegisterTemplate from '../templates/device.register.html';
 import deviceListTemplate from '../templates/device.list.html';
 import spaceListTemplate from '../templates/space.list.html';
 import spaceRegisterTemplate from '../templates/space.register.html';
 import 'plugins/security/services/shield_user';
 
-export function deviceController($scope, $route, $interval, $http, $sce,$compile,$timeout,$mdDialog, ShieldUser, NgMap, SpaceService, DeviceService) {
+export function deviceController($scope, $route, $interval, $http, $sce,$compile,$timeout,$mdDialog, ShieldUser, NgMap, SpaceService, DeviceService, FileUploader) {
     var device = this;
+    var space = this;
+
+    var drawBlueprint = function(el) {
+        if(el) {
+            var output = angular.element(el);
+            if (device.selected_space.blueprint){
+                output.html(device.selected_space.blueprint);
+            } else {
+                output.html("");
+            }
+            $compile(output.contents())($scope);
+        }
+    };
+
+    var drawDeviceCircle = function(id, location, color) {
+        if (location) {
+            var svg = d3.select("#"+id).selectAll("svg");
+            var newg = svg.append("g")
+                .data([{x: location.x, y: location.y}]);
+
+            $scope.dragrect = newg.append("circle")
+                .attr("id", "active")
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; })
+                .attr("r", 20)
+                .attr("fill", color);
+        }
+    };
+
+    space.spaceViewBlueprint = function() {
+        var el = document.getElementById("draw_blueprint");
+        drawBlueprint(el);
+    };
+
+    var devDialogBlueprint = function() {
+        var el = document.getElementById("dev_dial_draw_blueprint");
+        drawBlueprint(el);
+    };
+
+    device.devViewBlueprint = function() {
+        var el = document.getElementById("dev_view_draw_blueprint");
+        drawBlueprint(el);
+        drawDeviceCircle("dev_view_draw_blueprint",device.selected_device.location,"red");
+    };
+
+    var mapTunning = function(scope) {
+        var el = document.getElementById("space_map");
+        if(el) {
+            var mapOptions = {
+                zoom: 14,
+                center: {lat:35.2337171, lng:129.0773478},
+                mapTypeControl: true
+            };
+            var map = new google.maps.Map(document.getElementById("space_map"), mapOptions);
+            google.maps.event.addListener(map, 'click', function(event) {
+                scope.addMarker(event.latLng, map);
+            });
+        }
+
+    };
 
     device.title = 'PNU EMS';
     device.description = 'Device page of EMS';
@@ -23,26 +84,13 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
             device.getSpaces(function(data){
                 device.getDeviceList(function(devs){
                     device.select_device(device.devices[0]);
+                    device.setDeviceListTemplate();
                 });
             });
         });
-
-        device.setDeviceListTemplate();
     };
 
     device.getDeviceList = function (callback) {
-        // device.devices = [
-        //     {device_name:"Plug1",type:2,user_id:"jseokchoi",space_id:"sp0",device_id:"dv1",parent_id:"sm1",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Plug2",type:2,user_id:"jseokchoi",space_id:"sp0",device_id:"dv2",parent_id:"sm2",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Plug3",type:2,user_id:"jseokchoi",space_id:"sp1",device_id:"dv3",parent_id:"sm3",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Plug4",type:2,user_id:"jseokchoi",space_id:"sp1",device_id:"dv4",parent_id:"sm4",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Meter1",type:1,user_id:"jseokchoi",space_id:"sp0",device_id:"sm1",parent_id:"gw1",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Meter2",type:1,user_id:"jseokchoi",space_id:"sp0",device_id:"sm2",parent_id:"gw1",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Meter3",type:1,user_id:"jseokchoi",space_id:"sp1",device_id:"sm3",parent_id:"gw2",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Meter4",type:1,user_id:"jseokchoi",space_id:"sp1",device_id:"sm4",parent_id:"gw2",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Gateway1",type:0,user_id:"jseokchoi",space_id:"sp0",device_id:"gw1",parent_id:"",ip_addr:"127.0.0.1",setup_date:"2017-01-01"},
-        //     {device_name:"Gateway2",type:0,user_id:"jseokchoi",space_id:"sp1",device_id:"gw2",parent_id:"",ip_addr:"127.0.0.1",setup_date:"2017-01-01"}
-        // ];
         DeviceService.getDeviceList(device.user.username, function(data){
             device.devices=data;
             if(callback) {
@@ -79,6 +127,64 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         $scope.item = params.item;
         $scope.args = params;
 
+        var addDeviceCircle = function() {
+            var drag = d3.behavior.drag()
+                .origin(Object)
+                .on("drag", function(d){
+                    $scope.dragrect
+                        .attr("cx", d.x = Math.max(0, Math.min(700, d3.event.x)))
+                        .attr("cy", d.y = Math.max(0, Math.min(500, d3.event.y)));
+                    $scope.item.location={x:d.x, y:d.y};
+                });
+
+            var svg = d3.select("#dev_dial_draw_blueprint").selectAll("svg");
+            $scope.item.location={x:350, y:250};
+            var newg = svg.append("g")
+                .data([{x: $scope.item.location.x, y: $scope.item.location.y}]);
+
+            $scope.dragrect = newg.append("circle")
+                .attr("id", "active")
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; })
+                .attr("r", 20)
+                .attr("fill", "red")
+                .attr("cursor", "move")
+                .call(drag);
+        };
+
+        var dialogDrawBlueprint = function(space_id) {
+            var sp = $scope.args.spaces.filter(function(e){
+                return (e.space_id == space_id);
+            })[0];
+
+            var el = document.getElementById("dev_dial_draw_blueprint");
+            if(el) {
+                var output = angular.element(el);
+                if (sp.blueprint){
+                    output.html(sp.blueprint);
+                    $compile(output.contents())($scope);
+                    addDeviceCircle();
+                } else {
+                    output.html("");
+                    $compile(output.contents())($scope);
+                    delete $scope.item.location;
+                }
+            }
+        };
+
+        $scope.openFile = function(event) {
+            var input = event.target;
+
+            var reader = new FileReader();
+            reader.onload = function(){
+                var data = reader.result;
+                $scope.item.blueprint=data;
+                var output = angular.element(document.getElementById('dial_draw_blueprint'));
+                output.html(data);
+                $compile(output.contents())($scope);
+            };
+            reader.readAsText(input.files[0]);
+        };
 
         $scope.hide = function() {
             $mdDialog.hide();
@@ -102,16 +208,19 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
             $scope.item.space_id = $scope.args.parents.filter(function(e){
                 return (e.device_id == $scope.item.parent_id);
             })[0].space_id;
+            dialogDrawBlueprint($scope.item.space_id);
         };
 
         $scope.sp_change = function() {
-            if($scope.item.parent_id != "" &&
+            if($scope.item.parent_id && $scope.item.space_id &&
+               $scope.item.parent_id != "" &&
                $scope.item.space_id !=
                $scope.args.parents.filter(function(e){
-                return (e.device_id == $scope.item.parent_id);
-            })[0].space_id) {
+                   return (e.device_id == $scope.item.parent_id);
+               })[0].space_id) {
                 $scope.item.parent_id = "";
             }
+            dialogDrawBlueprint($scope.item.space_id);
         };
 
         $scope.addMarker = function(location,map) {
@@ -138,18 +247,7 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
                 params : params
             },
             onComplete:function(scope, element){
-                var el = document.getElementById("space_map");
-                if(el) {
-                    var mapOptions = {
-                        zoom: 14,
-                        center: {lat:35.2337171, lng:129.0773478},
-                        mapTypeControl: true
-                    };
-                    var map = new google.maps.Map(document.getElementById("space_map"), mapOptions);
-                    google.maps.event.addListener(map, 'click', function(event) {
-                        scope.addMarker(event.latLng, map);
-                    });
-                }
+                mapTunning(scope);
             },
             fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
         }).then(function(item) {
@@ -180,12 +278,15 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
             deviceTypes:device.deviceTypes,
             spaces : device.spaces,
             devices : device.devices,
-            parents: device.parents
+            parents: device.parents,
+            item: {}
         }, function(dev){
             dev.user_id = device.user.username;
             DeviceService.register(dev, function(res) {
                 console.log(res);
-                device.getDeviceList(function(data){});
+                if(res.result) {
+                    device.devices.push(dev);
+                }
             });
         });
     };
@@ -195,12 +296,15 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
             deviceTypes:device.deviceTypes,
             spaces : device.spaces,
             devices : device.devices,
-            parents: device.parents
+            parents: device.parents,
+            item: {}
         }, function(sp){
             sp.user_id = device.user.username;
             SpaceService.register(sp,function(res) {
                 console.log(res);
-                device.getSpaces();
+                if(res.result) {
+                    device.spaces.push(sp);
+                }
             });
         });
     };
@@ -227,6 +331,8 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         NgMap.getMap().then(function(map) {
             map.setCenter(device.selected_space.location); 
         });
+
+        device.devViewBlueprint();
     };
 
     device.select_space= function(sp) {
@@ -239,6 +345,8 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
         NgMap.getMap().then(function(map) {
             map.setCenter(device.selected_space.location); 
         });
+
+        space.spaceViewBlueprint();
     };
 
     device.switch_to_device_view = function(dev) {

@@ -24,15 +24,6 @@
     <md-content class="md-padding" layout-xs="column" layout="row">
       <div flex-xs flex-gt-xs="100" layout="column">
         <md-card>
-          <!-- <md-card-header> -->
-          <!-- <md-card-avatar> -->
-          <!--   <md-icon class="md-avatar-icon" md-svg-icon="img/icons/menu.svg"></md-icon> -->
-          <!-- </md-card-avatar> -->
-          <!--   <md-card-header-text> -->
-          <!--     <span class="md-title">Title</span> -->
-          <!--     <span class="md-subhead">subhead</span> -->
-          <!--   </md-card-header-text> -->
-          <!-- </md-card-header> -->
           <md-toolbar class="md-theme-light">
             <h2 class="md-toolbar-tools">
               <span>Device Information</span>
@@ -114,6 +105,18 @@
                 <marker position="{{dc.selected_space.location.lat}},{{dc.selected_space.location.lng}}"></marker>
               </ng-map>
             </div>
+          </md-card-content>
+        </md-card>
+
+        <md-card ng-if="dc.selected_device.location" ng-init="dc.devViewBlueprint()">
+          <md-toolbar class="md-theme-light">
+            <h2 class="md-toolbar-tools">
+              <span>Blueprint Information</span>
+            </h2>
+          </md-toolbar>
+
+          <md-card-content>
+            <div id="dev_view_draw_blueprint" class="blueprint"/>
           </md-card-content>
         </md-card>
       </div>

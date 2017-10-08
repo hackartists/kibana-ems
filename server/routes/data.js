@@ -1,7 +1,10 @@
+var dateFormat = require('dateformat');
+
 export default function (baseURI, server) {
     const { callWithRequest } = server.plugins.elasticsearch.getCluster('data');
     var config = server.config();
-    var index_pattern=config.get('ems.index_pattern');
+    var index_pattern=config.get('ems.index_pattern.data.index');
+    var index_type=config.get('ems.index_pattern.data.type');
     var transaction = function(req, trans, params, callback) {
         callWithRequest(req,trans,params).then(function (resp) {
             callback(resp, null);
@@ -21,7 +24,7 @@ export default function (baseURI, server) {
 
             var params = {
                 index: index_pattern,
-                type: 'data',
+                type: index_type,
                 body:{
                     query: {
                         match: {
@@ -32,11 +35,12 @@ export default function (baseURI, server) {
             };
 
             transaction(req,'search', params, function(res,err) {
+                var data =[];
                 if (err == null) {
-                    res = res.hits.hits;
+                    data = res.hits.hits;
                 }
 
-                reply(res);
+                reply(data);
             });
         }
     });
@@ -46,10 +50,10 @@ export default function (baseURI, server) {
         method: 'POST',
         handler(req, reply) {
             var data = req.payload;
-            data.create_at = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+            data.post_date = new Date().toISOString();//.replace(/\..+/, '');
             var params = {
                 index: index_pattern,
-                type: 'data',
+                type: index_type,
                 id: (new Date()).getTime(),
                 body: data
             };

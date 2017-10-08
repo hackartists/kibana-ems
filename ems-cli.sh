@@ -5,11 +5,13 @@ uri=/api/ems/data
 index=ems
 dt_type=device_type
 d_type=device
+data_type=data
 user=jseokchoi
 pw=8910
 prog=$0
 interval=3
 dev=none
+key=create_at
 debug=true
 info=true
 
@@ -35,6 +37,7 @@ function usage {
     echo "init_data) For EMS, some data will be indexed into elasticsearch"
     echo "simulate) Simulating sensing electric data"
     echo "del_device) Delete device"
+    echo "flush_data) Flush all of device data"
     echo ""
     echo "Flags : "
     echo "-h, --host) Hostname of elasticsearch (default: $host)"
@@ -44,6 +47,7 @@ function usage {
     echo "-p, --password) Password for elasticsearch (default: $pw)"
     echo "-t, --interval) Simulating interval second (default: ${interval}s)"
     echo "-d, --id) Document's ID"
+    echo "-k, --key) Key name of elasticsearch's document"
     echo "--uri) URI for insert data (default: $uri)"
     echo "--dev) Development URI string (default: $dev)"
     echo ""
@@ -53,7 +57,8 @@ function usage {
 function index_device_type {
     n=$1
     v=$2
-    curl -u "$user:$pw" -XPUT "$host:9200/$index/$dt_type/$v" -H "Content-Type: application/json" -d"{\"name\":\"$n\",\"value\":$v}"
+    curl -u "$user:$pw" --output /dev/null -XPUT "$host:9200/$index/$dt_type/$v" -H "Content-Type: application/json" -d"{\"name\":\"$n\",\"value\":$v}" 2> /dev/null
+    info "/$index/$dt_type/$v has been created."
 }
 
 function generate_device_types {
@@ -200,14 +205,75 @@ function put_device_data {
     done
 }
 
+function set_date_field {
+    debug "curl -u \"$user:$pw\" --output /dev/null -XPUT \"$host:9200/$index?pretty\" -H \"Content-Type: application/json\" -d\"{\\\"mappings\\\":{\\\"$data_type\\\": {\\\"properties\\\": {\\\"created_at\\\": {\\\"type\\\":   \\\"date\\\"}}}}}\""
+    curl -u "$user:$pw" --output /dev/null -XPUT "$host:9200/$index?pretty" -H "Content-Type: application/json" -d"{\"mappings\":{\"$data_type\": {\"properties\": {\"$key\": {\"type\":   \"date\"}}}}}" 2> /dev/null
+
+}
+
+function get_device_data {
+    res=`curl -u "$user:$pw" -XGET "$host:9200/$index/$data_type/_search?pretty=true&q=*:*" 2>/dev/null`
+    data=`echo $res | jq -r ".hits"`
+}
+
+function flush_all_data {
+    i=0
+    id=`echo $data | jq -r ".hits[$i]._id"`
+
+    while [ "$id" != "null" ]
+    do
+        curl -u "$user:$pw" --output /dev/null -XDELETE "$host:9200/$index/$data_type/$id" 2> /dev/null
+        info "/$index/$data_type/$id has been removed."
+        i=$((i+1))
+        id=`echo $data | jq -r ".hits[$i]._id"`
+    done
+}
+
 function init_data {
     generate_device_types
 }
 
 function simulate {
+    if [ $dev == none ]
+    then
+        mode="Production mode"
+    else
+        mode="Development mode($dev)"
+    fi
+    ##set_date_field
+    info "Simulation will be started with $mode"
     get_all_devices
-    gen_device_data
-    put_device_data
+    while [ true ]
+    do
+        info "Sensing data will be generated and inserted into EMS"
+        gen_device_data
+        put_device_data
+        sleep $interval
+    done
+}
+
+function flush_data {
+    get_device_data
+    res=`echo $data | jq -r ".hits[0]"`
+    if [ "$res" != "null" ]
+    then
+        exist_data=true
+    else
+        exist_data=false
+    fi
+
+    while [ $exist_data == true ]
+    do
+        flush_all_data
+        get_device_data
+        res=`echo $data | jq -r ".hits[0]"`
+        if [ "$res" != "null" ]
+        then
+            exist_data=true
+        else
+            exist_data=false
+        fi
+    done
 }
 
 function del_device {
@@ -221,7 +287,7 @@ function del_device {
 cmd=$1
 
 case $cmd in
-    init_data | simulate | del_device)
+    init_data | simulate | del_device | flush_data)
         ;;
     *)
         usage
@@ -259,6 +325,9 @@ while [ "$1" != "" ]; do
             ;;
         --dev)
             dev=$2
+            ;;
+        -k | --key)
+            key=$2
             ;;
         *)
             usage

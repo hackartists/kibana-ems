@@ -23,14 +23,14 @@ export default function (kibana) {
           order: 1,
           url: `/app/ems#/device`,
           description: 'interactively explore your data',
-          icon: 'plugins/kibana/assets/discover.svg',
+          icon: 'plugins/kibana/assets/discover.svg'
         }, {
           id: 'ems:history',
           title: 'History',
           order: 2,
           url: `/app/ems#/history`,
           description: 'design data visualizations',
-          icon: 'plugins/kibana/assets/visualize.svg',
+          icon: 'plugins/kibana/assets/visualize.svg'
         }
       ],
       
@@ -46,9 +46,33 @@ export default function (kibana) {
     },
 
     config(Joi) {
-      return Joi.object({
-        enabled: Joi.boolean().default(true),
-        index_pattern: Joi.string().default('ems')
+      const { array, boolean, number, object, string } = Joi;
+
+      return object({
+        enabled: boolean().default(true),
+        index_pattern: object({
+          enabled: boolean().default(true),
+          device: object({
+            enabled: boolean().default(true),
+            index: string().default("ems-dev"),
+            type: string().default("device")
+          }),
+          device_type: object({
+            enabled: boolean().default(true),
+            index: string().default("ems-dt"),
+            type: string().default("device_type")
+          }),
+          space: object({
+            enabled: boolean().default(true),
+            index: string().default("ems-sp"),
+            type: string().default("space")
+          }),
+          data: object({
+            enabled: boolean().default(true),
+            index: string().default("ems-data"),
+            type: string().default("data")
+          })
+        })
       }).default();
     },
 

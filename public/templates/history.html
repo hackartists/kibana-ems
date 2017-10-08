@@ -1,13 +1,85 @@
-<div class="container" ng-controller="historyController as hc">
-  <div class="row">
-    <div class="col-12-sm">
-      <div class="well">
-        <h2>Congratulations History</h2>
-        <p class="lead">You've successfully created your first Kibana Plugin!</p>
-      </div>
-      <h1>{{ hc.title }}</h1>
-      <p class="lead">{{ hc.description }}</p>
-      <p>The current time is {{ hc.displayTime }}</p>
+<div ng-controller="historyController as hc" class="ems-wrapper">
+  <div id="cv" class="ems-container">
+    <div layout="column" ng-cloak>
+      <md-content class="md-padding autocomplete" layout="column">
+        <div layout-gt-xs="row">
+          <div flex-gt-xs>
+            <md-card>
+              <md-toolbar class="md-theme-light">
+                <h2 class="md-toolbar-tools">
+                  <span>Device Query</span>
+                </h2>
+              </md-toolbar>
+
+              <md-card-content>
+                <md-contact-chips
+                  ng-model="selected_devices"
+                  md-contacts="hc.querySearch($query)"
+                  md-contact-name="device_name"
+                  md-require-match="true"
+                  md-highlight-flags="i"
+                  filter-selected="hc.filterSelected"
+                  placeholder="Enter a device name...">
+                </md-contact-chips>
+              </md-card-content>
+            </md-card>            
+          </div>
+        </div>
+
+        <div layout-gt-xs="row">
+          <div flex-gt-xs>
+            <md-card>
+              <md-toolbar class="md-theme-light">
+                <h2 class="md-toolbar-tools">
+                  <span>Start Date</span>
+                </h2>
+              </md-toolbar>
+
+              <md-card-content>
+                <md-datepicker ng-model="hc.start_date" md-placeholder="Enter date" md-open-on-focus>
+                </md-datepicker>
+              </md-card-content>
+            </md-card>
+          </div>
+
+          <div flex-gt-xs>
+            <md-card>
+              <md-toolbar class="md-theme-light">
+                <h2 class="md-toolbar-tools">
+                  <span>End Date</span>
+                </h2>
+              </md-toolbar>
+
+              <md-card-content>
+                <md-datepicker ng-model="hc.end_date" md-placeholder="Enter date" md-open-on-focus>
+                </md-datepicker>
+              </md-card-content>
+            </md-card>
+          </div>
+        </div>
+
+        <div layout-gt-xs="row" ng-repeat="sp in hc.selected_spaces" >
+          <div flex-gt-xs>
+            <md-card>
+              <md-toolbar class="md-theme-light">
+                <h2 class="md-toolbar-tools">
+                  <span>{{sp.name}} Information</span>
+                </h2>
+              </md-toolbar>
+
+              <md-card-content>
+                <div layout-gt-xs="row">
+                  <div id="{{sp.space_id}}_history_view_blueprint" callback-fn="hc.drawBlueprintFromSpaceID(id)" draw-blueprint>
+                  </div>
+                  <div id="{{sp.space_id}}_history-chart" callback-fn="hc.drawChartFromSpaceID(id)" draw-blueprint/>
+                </div>
+              </md-card-content>
+            </md-card>    
+          </div>
+        </div>
+
+        <div ng-init="hc.drawAllRealtimeViews()"></div>
+      </md-content>
     </div>
   </div>
 </div>

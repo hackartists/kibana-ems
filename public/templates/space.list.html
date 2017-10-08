@@ -51,6 +51,17 @@
             </md-list-item>
           </md-list>
         </md-card>
+
+        <md-card ng-if="dc.selected_space.blueprint" ng-init="dc.spaceViewBlueprint()">
+          <md-toolbar class="md-theme-light">
+            <h2 class="md-toolbar-tools">
+              <span>Space Blueprint</span>
+            </h2>
+          </md-toolbar>
+          <md-card-content>
+            <div id="draw_blueprint" class="blueprint"></div>
+          </md-card-content>
+        </md-card>
       </div>
     </md-content>
   </div>

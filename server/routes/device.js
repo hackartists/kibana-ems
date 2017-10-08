@@ -1,7 +1,10 @@
 export default function (baseURI, server) {
     const { callWithRequest } = server.plugins.elasticsearch.getCluster('data');
     var config = server.config();
-    var index_pattern=config.get('ems.index_pattern');
+    var index_pattern=config.get('ems.index_pattern.device.index');
+    var index_type=config.get('ems.index_pattern.device.type');
+    var dt_index_pattern=config.get('ems.index_pattern.device_type.index');
+    var dt_index_type=config.get('ems.index_pattern.device_type.type');
     var transaction = function(req, trans, params, callback) {
         callWithRequest(req,trans,params).then(function (resp) {
             callback(resp, null);
@@ -21,7 +24,7 @@ export default function (baseURI, server) {
 
             var params = {
                 index: index_pattern,
-                type: 'device',
+                type: index_type,
                 body:{
                     query: {
                         match: {
@@ -30,13 +33,13 @@ export default function (baseURI, server) {
                     }
                 }
             };
-
             transaction(req,'search', params, function(res,err) {
+                var data =[];
                 if (err == null) {
-                    res = res.hits.hits;
+                    data = res.hits.hits;
                 }
 
-                reply(res);
+                reply(data);
             });
         }
     });
@@ -46,16 +49,17 @@ export default function (baseURI, server) {
         method: 'GET',
         handler(req, reply) {
             var params = {
-                index: index_pattern,
-                type: 'device_type'
+                index: dt_index_pattern,
+                type: dt_index_type
             };
 
             transaction(req,'search', params, function(res,err) {
+                var data =[];
                 if (err == null) {
-                    res = res.hits.hits;
+                    data = res.hits.hits;
                 }
 
-                reply(res);
+                reply(data);
             });
         }
     });
@@ -67,7 +71,7 @@ export default function (baseURI, server) {
             var device = req.payload;
             var params = {
                 index: index_pattern,
-                type: 'device',
+                type: index_type,
                 id: (new Date()).getTime(),
                 body: device
             };
@@ -93,7 +97,7 @@ export default function (baseURI, server) {
             var id = req.payload.id;
             var params = {
                 index: index_pattern,
-                type: 'device',
+                type: index_type,
                 id: id,
                 body: {doc:device}
             };

@@ -1,7 +1,8 @@
 export default function (baseURI, server) {
     const { callWithRequest } = server.plugins.elasticsearch.getCluster('data');
     var config = server.config();
-    var index_pattern=config.get('ems.index_pattern');
+    var index_pattern=config.get('ems.index_pattern.space.index');
+    var index_type=config.get('ems.index_pattern.space.type');
     var transaction = function(req, trans, params, callback) {
         callWithRequest(req,trans,params).then(function (resp) {
             callback(resp, null);
@@ -21,7 +22,7 @@ export default function (baseURI, server) {
 
             var params = {
                 index: index_pattern,
-                type: 'space',
+                type: index_type,
                 body:{
                     query: {
                         match: {
@@ -32,11 +33,12 @@ export default function (baseURI, server) {
             };
 
             transaction(req,'search', params, function(res,err) {
+                var data =[];
                 if (err == null) {
-                    res = res.hits.hits;
+                    data = res.hits.hits;
                 }
 
-                reply(res);
+                reply(data);
             });
         }
     });
@@ -49,16 +51,12 @@ export default function (baseURI, server) {
 
             var params = {
                 index: index_pattern,
-                type: 'space',
+                type: index_type,
                 id: (new Date()).getTime(),
                 body: space
             };
 
             transaction(req,'create',params, function(res,err) {
-                if (err == null) {
-                    res = res.hits.hits;
-                }
-
                 reply(res);
             });
         }

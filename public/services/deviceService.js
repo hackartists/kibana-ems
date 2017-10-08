@@ -53,7 +53,7 @@ export default function($http) {
                 }
 
                 callback(data);
-            }
+            } 
         });
     };
 
