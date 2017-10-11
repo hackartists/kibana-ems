@@ -10,7 +10,6 @@ import 'angular-messages/angular-messages.js';
 import 'angular-material/angular-material.js';
 import 'angular-sanitize/angular-sanitize.js';
 import 'ngmap/build/scripts/ng-map.js';
-import 'angular-file-upload/dist/angular-file-upload.js';
 import './less/main.less';
 import { deviceController } from './controllers/device_controller';
 import { historyController } from './controllers/history_controller';
@@ -39,7 +38,7 @@ uiRoutes
   });
 
 uiModules
-  .get('app/ems', ['ngMaterial','ngMessages','ngMap','angularFileUpload'])
+  .get('app/ems', ['ngMaterial','ngMessages','ngMap'])
   .controller('deviceController', deviceController)
   .controller('historyController', historyController)
   .service('SpaceService', spaceService)

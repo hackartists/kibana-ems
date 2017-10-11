@@ -36,6 +36,7 @@ function usage {
     echo "Commands : "
     echo "init_data) For EMS, some data will be indexed into elasticsearch"
     echo "simulate) Simulating sensing electric data"
+    echo "anormal) Put abnormal data"
     echo "del_device) Delete device"
     echo "flush_data) Flush all of device data"
     echo ""
@@ -167,6 +168,65 @@ function gen_device_data {
     debug "data_t0 : ${data_t0[*]}"
 }
 
+function gen_device_abnormal_data {
+    seed=$$
+    limit=100
+    data_t0=()
+    data_t1=()
+    data_t2=()
+    rdata=()
+
+    for d in "${devices_t2[@]}"
+    do
+
+        random=10000
+        data_t2+=( "$random" )
+    done
+
+    i=0
+    for d in "${devices_t1[@]}"
+    do
+        j=0
+        dd=10000
+        dd=$((dd+1))
+        for p in "${parents_t2[@]}"
+        do
+            debug "$d $p"
+            if [ "$d" == "$p" ]
+            then
+                debug "It is a parent."
+                dd=$((dd+${data_t2[$j]}))
+            fi
+            j=$((j+1))
+        done
+        data_t1+=( $dd )
+        i=$((i+1))
+    done
+
+    for d in "${devices_t0[@]}"
+    do
+        j=0
+        dd=100000
+        dd=$((dd+3))
+        for p in "${parents_t1[@]}"
+        do
+            debug "$d $p"
+            if [ "$d" == "$p" ]
+            then
+                debug "It is a parent."
+                dd=$((dd+${data_t1[$j]}))
+            fi
+            j=$((j+1))
+        done
+        data_t0+=( $dd )
+        i=$((i+1))
+    done
+
+    debug "data_t2 : ${data_t2[*]}"
+    debug "data_t1 : ${data_t1[*]}"
+    debug "data_t0 : ${data_t0[*]}"
+}
+
 function put_data {
     p_id=$1
     p_val=$2
@@ -252,6 +312,21 @@ function simulate {
     done
 }
 
+function abnormal {
+    if [ $dev == none ]
+    then
+        mode="Production mode"
+    else
+        mode="Development mode($dev)"
+    fi
+    ##set_date_field
+    info "Simulation will be started with $mode"
+    get_all_devices
+    info "Sensing data will be generated and inserted into EMS"
+    gen_device_abnormal_data
+    put_device_data
+}
+
 function flush_data {
     get_device_data
     res=`echo $data | jq -r ".hits[0]"`
@@ -287,7 +362,7 @@ function del_device {
 cmd=$1
 
 case $cmd in
-    init_data | simulate | del_device | flush_data)
+    init_data | simulate | del_device | flush_data | abnormal)
         ;;
     *)
         usage

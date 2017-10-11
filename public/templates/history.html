@@ -26,44 +26,44 @@
           </div>
         </div>
 
-        <div layout-gt-xs="row">
-          <div flex-gt-xs>
-            <md-card>
-              <md-toolbar class="md-theme-light">
-                <h2 class="md-toolbar-tools">
-                  <span>Start Date</span>
-                </h2>
-              </md-toolbar>
+        <!-- <div layout-gt-xs="row"> -->
+        <!--   <div flex-gt-xs> -->
+        <!--     <md-card> -->
+        <!--       <md-toolbar class="md-theme-light"> -->
+        <!--         <h2 class="md-toolbar-tools"> -->
+        <!--           <span>Start Date</span> -->
+        <!--         </h2> -->
+        <!--       </md-toolbar> -->
 
-              <md-card-content>
-                <md-datepicker ng-model="hc.start_date" md-placeholder="Enter date" md-open-on-focus>
-                </md-datepicker>
-              </md-card-content>
-            </md-card>
-          </div>
+        <!--       <md-card-content> -->
+        <!--         <md-datepicker ng-model="hc.start_date" md-placeholder="Enter date" md-open-on-focus> -->
+        <!--         </md-datepicker> -->
+        <!--       </md-card-content> -->
+        <!--     </md-card> -->
+        <!--   </div> -->
 
-          <div flex-gt-xs>
-            <md-card>
-              <md-toolbar class="md-theme-light">
-                <h2 class="md-toolbar-tools">
-                  <span>End Date</span>
-                </h2>
-              </md-toolbar>
+        <!--   <div flex-gt-xs> -->
+        <!--     <md-card> -->
+        <!--       <md-toolbar class="md-theme-light"> -->
+        <!--         <h2 class="md-toolbar-tools"> -->
+        <!--           <span>End Date</span> -->
+        <!--         </h2> -->
+        <!--       </md-toolbar> -->
 
-              <md-card-content>
-                <md-datepicker ng-model="hc.end_date" md-placeholder="Enter date" md-open-on-focus>
-                </md-datepicker>
-              </md-card-content>
-            </md-card>
-          </div>
-        </div>
+        <!--       <md-card-content> -->
+        <!--         <md-datepicker ng-model="hc.end_date" md-placeholder="Enter date" md-open-on-focus> -->
+        <!--         </md-datepicker> -->
+        <!--       </md-card-content> -->
+        <!--     </md-card> -->
+        <!--   </div> -->
+        <!-- </div> -->
 
         <div layout-gt-xs="row" ng-repeat="sp in hc.selected_spaces" >
           <div flex-gt-xs>
             <md-card>
               <md-toolbar class="md-theme-light">
                 <h2 class="md-toolbar-tools">
-                  <span>{{sp.name}} Information</span>
+                  <span>{{sp.name}} Realtime Monitoring</span>
                 </h2>
               </md-toolbar>
 
@@ -71,7 +71,9 @@
                 <div layout-gt-xs="row">
                   <div id="{{sp.space_id}}_history_view_blueprint" callback-fn="hc.drawBlueprintFromSpaceID(id)" draw-blueprint>
                   </div>
-                  <div id="{{sp.space_id}}_history-chart" callback-fn="hc.drawChartFromSpaceID(id)" draw-blueprint/>
+                  <div flex-gt-xs>
+                    <canvas id="{{sp.space_id}}_history-chart" callback-fn="hc.drawChartFromSpaceID(id)" class="history-chart" draw-blueprint/>
+                  </div>
                 </div>
               </md-card-content>
             </md-card>    

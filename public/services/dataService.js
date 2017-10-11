@@ -1,9 +1,11 @@
 import chrome from 'ui/chrome';
 
-export default function($http) {
+export default function($http, $interval) {
     var baseURI = "/api/ems/data";
     var uri = {
-        getData: {uri:chrome.addBasePath(baseURI + "/"), method:"GET"}
+        getData: {uri:chrome.addBasePath(baseURI + "/"), method:"GET"},
+        pollingCreate: {uri:chrome.addBasePath(baseURI + "/lp/create"), method:"POST"},
+        pollingData: {uri:chrome.addBasePath(baseURI + "/lp"), method:"GET"}
     };
 
     this.getData = function(device_id, callback) {
@@ -27,6 +29,37 @@ export default function($http) {
                 callback(device_id,data);
             }
         });
+    };
+
+    this.polling = function(user_id, devices, callback) {
+        var u = uri.pollingCreate;
+
+        var req = {
+            method: u.method,
+            url: u.uri,
+            data: {user_id:user_id,devices:devices}
+        };
+
+        this.callAPI(req,function(res) {
+            var pollingData= function() {
+                var u = uri.pollingData;
+
+                var req = {
+                    method: u.method,
+                    url: u.uri + "?user_id="+user_id
+                };
+
+                $http(req).then(function successCallback(res) {
+                    if(res.data.data.length >0) {
+                        callback(res.data.data);
+                    }
+                }, function errorCallback(res) {
+                });
+            };
+
+            $interval(pollingData, 1000);
+        });
+
     };
 
     this.callAPI = function(req, callback) {

@@ -6,7 +6,7 @@ import spaceListTemplate from '../templates/space.list.html';
 import spaceRegisterTemplate from '../templates/space.register.html';
 import 'plugins/security/services/shield_user';
 
-export function deviceController($scope, $route, $interval, $http, $sce,$compile,$timeout,$mdDialog, ShieldUser, NgMap, SpaceService, DeviceService, FileUploader) {
+export function deviceController($scope, $route, $interval, $http, $sce,$compile,$timeout,$mdDialog, ShieldUser, NgMap, SpaceService, DeviceService) {
     var device = this;
     var space = this;
 

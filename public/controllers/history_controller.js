@@ -1,8 +1,10 @@
 import moment from 'moment';
 import 'd3/d3.js';
 import 'plugins/security/services/shield_user';
+import 'chart.js';
+import colorTemplate from '../templates/color_picker.html';
 
-export function historyController($scope, $route, $compile, $interval, $http, $interpolate, $timeout, DeviceService, ShieldUser, DataService, SpaceService) {
+export function historyController($scope, $route, $compile, $interval, $http, $mdDialog, $interpolate, $timeout, DeviceService, ShieldUser, DataService, SpaceService) {
     var history = this;
     history.title = 'PNU EMS';
     history.description = 'Device page of EMS';
@@ -46,8 +48,8 @@ export function historyController($scope, $route, $compile, $interval, $http, $i
                     $scope.selected_devices.push(history.devices[i]);
                     DataService.getData(history.devices[i].device_id, function(device_id,data){
                         data.sort(function(a,b){
-                            var c = new Date(a.create_at);
-                            var d = new Date(b.create_at);
+                            var c = new Date(a.post_date);
+                            var d = new Date(b.post_date);
                             return c-d;
                         });
                         history.device_data.push({device_id:device_id,data:data});
@@ -55,10 +57,9 @@ export function historyController($scope, $route, $compile, $interval, $http, $i
                         if (!c_len) {
                             history.getSpaces(function(data){
                                 history.autoSelectSpaces();
-                                $scope.$watch('$scope.selected_devices',function(){history.autoSelectSpaces();},true);
                             });
-                            history.getChartOptions();
-                            history.chart();
+                            //history.getChartOptions();
+                            //history.chart();
                         }
                     });
                 }
@@ -113,7 +114,17 @@ export function historyController($scope, $route, $compile, $interval, $http, $i
         var space = history.selected_spaces.filter(function(e){
             return e.space_id == space_id;
         })[0];
-        history.chart(space.space_id);
+
+        var group = history.group.filter(function(e){
+            return e.space.space_id == space.space_id;
+        });
+
+        if (!group.length) {
+            history.group.push({space:space});
+        }
+
+        //history.chart(space.space_id);
+        history.drawLineChart(space);
     };
 
     var drawDeviceCircle = function(id, devices) {
@@ -128,7 +139,15 @@ export function historyController($scope, $route, $compile, $interval, $http, $i
             .attr("cx", function(d,i) { return d.location.x; })
             .attr("cy", function(d,i) { return d.location.y; })
             .attr("r", 20)
-            .attr("fill", function(d,i) {return d.color;});
+            .attr("fill", function(d,i) {return d.color;})
+            .on("click", function(d) {
+                var s = this;
+                showDialog(function(color){
+                    d.color=color;
+                    s.attributes[4].value=d.color;
+                    deviceChartUpdate(d);
+                });
+            });
 
         var texts = svg.selectAll("text")
             .data(devices)
@@ -139,6 +158,49 @@ export function historyController($scope, $route, $compile, $interval, $http, $i
             .attr("y", function(d,i) { return d.location.y+30; })
             .attr("text-anchor", "middle")
             .text(function(d) { return d.device_name; });
+    };
+
+    function DialogController($scope, $mdDialog, $timeout) {
+        $scope.hide = function() {
+            $mdDialog.hide();
+        };
+
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+        $scope.select = function() {
+            $mdDialog.hide($scope.color);
+        };
+    }
+
+    var showDialog = function(callback) {
+        $mdDialog.show({
+            controller: DialogController,
+            template: colorTemplate,
+            parent: angular.element(document.body),
+            clickOutsideToClose:true,
+            fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
+        }).then(function(item) {
+            callback(item);
+        }, function() {});
+    };
+
+    var deviceChartUpdate = function(device) {
+        var g = history.group.filter(function(e) {
+            var s = e.devices.filter(function(d){
+                return d.device_id == device.device_id;
+            });
+
+            return s.length > 0;
+        })[0];
+
+        var ds = g.config.data.datasets.filter(function(e){
+            return e.label == device.device_name;
+        })[0];
+        ds.backgroundColor= device.color;
+        ds.borderColor= device.color;
+        g.chart.update();
     };
 
     history.selectSpaceDevices = function(space) {
@@ -156,7 +218,6 @@ export function historyController($scope, $route, $compile, $interval, $http, $i
     };
 
     history.drawBlueprint = function(space) {
-        var exp = $interpolate('{{sp.space_id}}');
         var id=space.space_id+"_history_view_blueprint";
         var el = document.getElementById(id);
         if(el) {
@@ -178,8 +239,97 @@ export function historyController($scope, $route, $compile, $interval, $http, $i
         drawDeviceCircle(id,group.devices);
     };
 
+    history.drawLineChart = function(space) {
+        var datasets = [];
+
+        var group = history.group.filter(function(e){
+            return e.space.space_id == space.space_id;
+        })[0];
+
+        for(var i=0; i < group.devices.length; i++) {
+            var device = group.devices[i];
+            var data = [];
+            device.data = data;
+
+            datasets.push({
+                label: device.device_name,
+                backgroundColor: device.color,
+                borderColor: device.color,
+                data: data,
+                fill: false
+            });
+        }
+
+        var config = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                title:{
+                    display:true,
+                    text:space.name + ' Device Line Chart'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time series'
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Value'
+                        }
+                    }]
+                }
+            }
+        };
+
+        var ctx = document.getElementById(space.space_id+"_history-chart").getContext("2d");
+        group.chart = new Chart(ctx, config);
+        group.config = config;
+
+        DataService.polling(history.user.username, $scope.selected_devices, function(data) {
+            var new_x=new Date().toISOString();
+            for (var i=0; i< history.group.length; i++) {
+                var g = history.group[i];
+
+                g.config.data.datasets.forEach(function(dataset) {
+                    var d = $scope.selected_devices.filter(function(e) {
+                        return e.device_name == dataset.label;
+                    })[0];
+                    var fd = data.filter(function(e){ return e.device_id == d.device_id; });
+
+                    for (var s=0; s < fd.length; s++) {
+                        dataset.data.push(fd[s].value);
+                        if (g.config.data.labels.length < dataset.data.length) {
+                            g.config.data.labels.push(new_x);
+                        }
+                    }
+                });
+
+                g.chart.update();
+            }
+        });
+    };
+
     history.drawRealtimeView = function(space) {
         history.drawBlueprint(space);
+        history.drawLineChart(space);
     };
 
     history.drawAllRealtimeViews = function() {
@@ -200,98 +350,6 @@ export function historyController($scope, $route, $compile, $interval, $http, $i
                 callback(data);
             }
         });
-    };
-
-    history.convertLabelToPixel = function(labels, data) {
-    };
-
-    history.drawCircles = function(svg,data) {
-        var circles = svg.selectAll("circle")
-            .data(data)
-            .enter()
-            .append("circle");
-
-        circles
-            .attr("cx", 0)
-            .attr("cy", history.chartOptions.svg_height);
-        circles
-            .transition()
-            .delay(function(d, i) {
-                return i * 100;
-            })
-            .duration(3000)
-            .attr("cx", function(d, i) {
-                return history.chartOptions.point_x(i);
-            })
-            .attr("cy", function(d, i) {
-                return history.chartOptions.point_y(d);
-            })
-            .attr("r", function(d) {
-                return history.chartOptions.circle_size;
-            });
-    };
-
-    history.drawYLabels = function(svg, labels) {
-        svg.selectAll("text")
-            .data(labels)
-            .enter()
-            .append("text")
-            .text(function(d) {
-                return ""+d;
-            })
-            .attr("x", function(d,i) {
-                return history.chartOptions.point_x(i);
-            })
-            .attr("y", function(d) {
-                return history.chartOptions.svg_height-(history.chartOptions.padding/2);
-            });
-    };
-
-    history.generateCoordinates = function() {
-    };
-
-    history.drawAxis = function(svg,dataset) {
-        var xScale = d3.scale.linear()
-            .domain([0, d3.max(dataset, function(d) { return d[0]; })])
-            .range([0, history.chartOptions.svg_width]);
-        var yScale = d3.scale.linear()
-            .domain([0, d3.max(dataset, function(d) { return d[1]; })])
-            .range([0, history.chartOptions.svg_height]);
-
-        var xAxis = d3.svg.axis()
-            .scale(xScale)
-            .orient("bottom")
-            .ticks(5);
-
-        var yAxis = d3.svg.axis()
-            .scale(yScale)
-            .orient("left")
-            .ticks(5);
-
-        svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(0," + (history.chartOptions.svg_height - history.chartOptions.padding) + ")")
-            .call(xAxis);
-
-        svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(" + history.chartOptions.padding + ",0)")
-            .call(yAxis);
-    };
-
-    history.chart = function(id) {
-        //var svg = d3.select("#history-svg");//.append("svg:svg");
-        var data = [10, 15, 25, 120, 300, 100, 400, 30, 450];
-        history.chartOptions.labels = data;
-        //history.chartOptions.svg_width= d3.select("#history-chart").clientWidth;
-        var svg = d3.select("#"+id+"_history-chart")
-            .append("svg:svg")
-            .attr("width",history.chartOptions.svg_width)
-            .attr("height", history.chartOptions.svg_height);
-        history.drawCircles(svg,data);
-        history.drawAxis(svg,data);
-        //history.drawYLabels(svg,history.chartOptions.labels);
-
     };
 
     history.getDeviceList = function (callback) {
