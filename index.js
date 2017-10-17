@@ -26,9 +26,9 @@ export default function (kibana) {
           icon: 'plugins/kibana/assets/discover.svg'
         }, {
           id: 'ems:history',
-          title: 'History',
+          title: 'Monitoring',
           order: 2,
-          url: `/app/ems#/history`,
+          url: `/app/ems#/monitor`,
           description: 'design data visualizations',
           icon: 'plugins/kibana/assets/visualize.svg'
         }

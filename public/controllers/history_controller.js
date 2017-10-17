@@ -1,6 +1,7 @@
 import moment from 'moment';
 import 'd3/d3.js';
 import 'plugins/security/services/shield_user';
+import 'jscolor-picker/jscolor.js';
 import 'chart.js';
 import colorTemplate from '../templates/color_picker.html';
 
@@ -135,7 +136,7 @@ export function historyController($scope, $route, $compile, $interval, $http, $m
             .enter()
             .append("circle");
         circles
-            .attr("id", "active")
+            .attr("id", function(d) { return d.device_id; })
             .attr("cx", function(d,i) { return d.location.x; })
             .attr("cy", function(d,i) { return d.location.y; })
             .attr("r", 20)
@@ -171,6 +172,10 @@ export function historyController($scope, $route, $compile, $interval, $http, $m
 
         $scope.select = function() {
             $mdDialog.hide($scope.color);
+        };
+
+        $scope.toRGB = function(color) {
+            $scope.color=color.toHexString();
         };
     }
 
@@ -307,12 +312,22 @@ export function historyController($scope, $route, $compile, $interval, $http, $m
             var new_x=new Date().toISOString();
             for (var i=0; i< history.group.length; i++) {
                 var g = history.group[i];
+                var remove = false;
+
+                if (g.config.data.labels.length > 29) {
+                    remove=true;
+                    g.config.data.labels.shift();
+                }
 
                 g.config.data.datasets.forEach(function(dataset) {
                     var d = $scope.selected_devices.filter(function(e) {
                         return e.device_name == dataset.label;
                     })[0];
                     var fd = data.filter(function(e){ return e.device_id == d.device_id; });
+
+                    if (remove) {
+                        dataset.data.shift();
+                    }
 
                     for (var s=0; s < fd.length; s++) {
                         dataset.data.push(fd[s].value);
@@ -333,6 +348,9 @@ export function historyController($scope, $route, $compile, $interval, $http, $m
     };
 
     history.drawAllRealtimeViews = function() {
+        for (var i=0; i< history.group.length; i++) {
+            history.group[i].chart.destroy();
+        }
         history.group=[];
         history.autoSelectSpaces();
 

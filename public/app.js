@@ -9,6 +9,10 @@ import 'angular-aria/angular-aria.js';
 import 'angular-messages/angular-messages.js';
 import 'angular-material/angular-material.js';
 import 'angular-sanitize/angular-sanitize.js';
+import 'jquery/dist/jquery.js';
+import 'spectrum-colorpicker/spectrum.css';
+import 'spectrum-colorpicker/spectrum.js';
+import 'angular-spectrum-colorpicker/dist/angular-spectrum-colorpicker.js';
 import 'ngmap/build/scripts/ng-map.js';
 import './less/main.less';
 import { deviceController } from './controllers/device_controller';
@@ -17,28 +21,27 @@ import spaceService from './services/spaceService';
 import deviceService from './services/deviceService';
 import dataService from './services/dataService';
 import drawBlueprintDirective from './directives/draw_blueprint.js';
-import template from './templates/index.html';
 import deviceTemplate from './templates/device.html';
 import historyTemplate from './templates/history.html';
 
 uiRoutes.enable();
-uiRoutes
-  .when('/', {
-    template: template
-  });
-
 uiRoutes
   .when('/device', {
     template: deviceTemplate
   });
 
 uiRoutes
-  .when('/history', {
+  .when('/monitor', {
     template: historyTemplate
   });
 
 uiModules
-  .get('app/ems', ['ngMaterial','ngMessages','ngMap'])
+  .get('app/ems', [
+    'ngMaterial',
+    'ngMessages',
+    'angularSpectrumColorpicker',
+    'ngMap'
+  ])
   .controller('deviceController', deviceController)
   .controller('historyController', historyController)
   .service('SpaceService', spaceService)

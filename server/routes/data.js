@@ -60,7 +60,7 @@ export default function (baseURI, server) {
             if (server.queues) {
                 var qs = server.queues.filter( function (e) {
                     var res=false;
-                    console.log(e);
+
                     for (var i=0; i< e.devices.length; i++) {
                         if (e.devices[i].device_id == data.device_id) {
                             res=true;

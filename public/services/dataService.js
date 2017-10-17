@@ -7,6 +7,7 @@ export default function($http, $interval) {
         pollingCreate: {uri:chrome.addBasePath(baseURI + "/lp/create"), method:"POST"},
         pollingData: {uri:chrome.addBasePath(baseURI + "/lp"), method:"GET"}
     };
+    var service= this;
 
     this.getData = function(device_id, callback) {
         var u = uri.getData;
@@ -31,6 +32,24 @@ export default function($http, $interval) {
         });
     };
 
+    this.pollingData= function(self,user_id,callback) {
+        var u = uri.pollingData;
+
+        var req = {
+            method: u.method,
+            url: u.uri + "?user_id="+user_id
+        };
+
+        $http(req).then(function successCallback(res) {
+            if(res.data.data.length >0) {
+                callback(res.data.data);
+            }
+            self.pollingData(self,user_id,callback);
+        }, function errorCallback(res) {
+            self.pollingData(self,user_id,callback);
+        });
+    };
+
     this.polling = function(user_id, devices, callback) {
         var u = uri.pollingCreate;
 
@@ -41,23 +60,7 @@ export default function($http, $interval) {
         };
 
         this.callAPI(req,function(res) {
-            var pollingData= function() {
-                var u = uri.pollingData;
-
-                var req = {
-                    method: u.method,
-                    url: u.uri + "?user_id="+user_id
-                };
-
-                $http(req).then(function successCallback(res) {
-                    if(res.data.data.length >0) {
-                        callback(res.data.data);
-                    }
-                }, function errorCallback(res) {
-                });
-            };
-
-            $interval(pollingData, 1000);
+            service.pollingData(service,user_id, callback);
         });
 
     };
