@@ -8,7 +8,7 @@ export default function (kibana) {
     name: 'ems',
     configPrefix: 'ems',
     uiExports: {
-      
+      managementSections: ['plugins/ems/management'],
       app: {
         title: 'Ems',
         description: 'EMS',
@@ -33,16 +33,12 @@ export default function (kibana) {
           icon: 'plugins/kibana/assets/visualize.svg'
         }
       ],
-      
       translations: [
         resolve(__dirname, './translations/es.json')
       ],
-      
-      
       hacks: [
         'plugins/ems/hack'
       ]
-      
     },
 
     config(Joi) {
