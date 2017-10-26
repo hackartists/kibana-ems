@@ -26,6 +26,11 @@ import historyTemplate from './templates/history.html';
 
 uiRoutes.enable();
 uiRoutes
+  .when('/', {
+    template: deviceTemplate
+  });
+
+uiRoutes
   .when('/device', {
     template: deviceTemplate
   });

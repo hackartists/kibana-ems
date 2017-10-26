@@ -83,7 +83,9 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
             device.user=user;
             device.getSpaces(function(data){
                 device.getDeviceList(function(devs){
-                    device.select_device(device.devices[0]);
+                    if (device.devices.length > 0) {
+                        device.select_device(device.devices[0]);
+                    }
                     device.setDeviceListTemplate();
                 });
             });
@@ -316,6 +318,9 @@ export function deviceController($scope, $route, $interval, $http, $sce,$compile
 
     device.setSpaceListTemplate = function() {
         device.setTemplate(spaceListTemplate);
+        if ( device.spaces.length > 0) {
+            device.select_space(device.spaces[0]);
+        }
     };
 
     device.select_device= function(dev) {
